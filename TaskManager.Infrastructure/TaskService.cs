@@ -33,10 +33,11 @@ public class TaskService : ITaskService
             task.DataCriacao = DateTime.Now;
         }
 
-        // Validação de negócio
-        if (!await ValidateTaskAsync(task, out string errorMessage))
+        // Validação de negócio para criação (inclui verificação de título único)
+        var validationResult = await ValidateTaskForCreationAsync(task);
+        if (!validationResult.isValid)
         {
-            throw new InvalidOperationException(errorMessage);
+            throw new InvalidOperationException(validationResult.errorMessage);
         }
 
         return await _repository.AddAsync(task);
@@ -48,6 +49,12 @@ public class TaskService : ITaskService
         if (existingTask == null)
         {
             throw new KeyNotFoundException($"Tarefa com ID {task.Id} não encontrada");
+        }
+
+        // Validação de negócio: não permitir alterar status de tarefa concluída
+        if (existingTask.Status == TaskManager.Domain.TaskStatus.Concluida && task.Status != TaskManager.Domain.TaskStatus.Concluida)
+        {
+            throw new InvalidOperationException("Não é possível alterar o status de uma tarefa concluída");
         }
 
         // Validação de negócio
@@ -102,5 +109,22 @@ public class TaskService : ITaskService
 
         errorMessage = string.Empty;
         return System.Threading.Tasks.Task.FromResult(true);
+    }
+
+    public async System.Threading.Tasks.Task<(bool isValid, string errorMessage)> ValidateTaskForCreationAsync(TaskManager.Domain.Task task)
+    {
+        // Validações básicas
+        if (!await ValidateTaskAsync(task, out string errorMessage))
+        {
+            return (false, errorMessage);
+        }
+
+        // Verificar se já existe uma tarefa com o mesmo título
+        if (await _repository.ExistsByTitleAsync(task.Titulo))
+        {
+            return (false, "Já existe uma tarefa com este título");
+        }
+
+        return (true, string.Empty);
     }
 }

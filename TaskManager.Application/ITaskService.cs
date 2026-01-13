@@ -13,4 +13,5 @@ public interface ITaskService
     System.Threading.Tasks.Task UpdateTaskAsync(TaskManager.Domain.Task task);
     System.Threading.Tasks.Task DeleteTaskAsync(int id);
     System.Threading.Tasks.Task<bool> ValidateTaskAsync(TaskManager.Domain.Task task, out string errorMessage);
+    System.Threading.Tasks.Task<(bool isValid, string errorMessage)> ValidateTaskForCreationAsync(TaskManager.Domain.Task task);
 }

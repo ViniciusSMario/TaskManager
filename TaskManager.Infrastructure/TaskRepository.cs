@@ -45,4 +45,9 @@ public class TaskRepository : ITaskRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async System.Threading.Tasks.Task<bool> ExistsByTitleAsync(string titulo)
+    {
+        return await _context.Tasks.AnyAsync(t => t.Titulo.ToLower() == titulo.ToLower());
+    }
 }
