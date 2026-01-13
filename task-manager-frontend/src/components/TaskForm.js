@@ -46,15 +46,17 @@ export function createTaskForm(task = null, onSubmit, onCancel) {
           ${task && task.status === 2 ? '<small class="status-info">Tarefa concluída não pode ter o status alterado</small>' : ''}
         </div>
 
-        <div class="form-group">
+        ${task && task.status === 2 ? `
+        <div class="form-group" id="dataConclusao-group">
           <label for="dataConclusao">Data de Conclusão</label>
           <input 
             type="datetime-local" 
             id="dataConclusao" 
             name="dataConclusao"
-            value="${task && task.dataConclusao ? new Date(task.dataConclusao).toISOString().slice(0, 16) : ''}"
+            value="${task && task.dataConclusao ? (() => { const d = new Date(task.dataConclusao); const year = d.getFullYear(); const month = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); const hours = String(d.getHours()).padStart(2, '0'); const minutes = String(d.getMinutes()).padStart(2, '0'); return `${year}-${month}-${day}T${hours}:${minutes}`; })() : ''}"
           />
         </div>
+        ` : ''}
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" id="btn-cancel">Cancelar</button>
@@ -68,35 +70,57 @@ export function createTaskForm(task = null, onSubmit, onCancel) {
   const btnClose = formContainer.querySelector('.btn-close');
   const btnCancel = formContainer.querySelector('#btn-cancel');
   const statusSelect = formContainer.querySelector('#status');
-  const dataConclusaoInput = formContainer.querySelector('#dataConclusao');
 
-  statusSelect.addEventListener('change', (e) => {
-    if (e.target.value === '2') {
-      if (!dataConclusaoInput.value) {
+  // Função para mostrar/ocultar campo de dataConclusao
+  function updateDataConclusaoField() {
+    let dataConclusaoGroup = formContainer.querySelector('#dataConclusao-group');
+    if (statusSelect.value === '2') {
+      if (!dataConclusaoGroup) {
+        // Adiciona campo
+        const formActions = formContainer.querySelector('.form-actions');
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.id = 'dataConclusao-group';
+        div.innerHTML = `
+          <label for="dataConclusao">Data de Conclusão</label>
+          <input type="datetime-local" id="dataConclusao" name="dataConclusao" />
+        `;
+        formActions.parentNode.insertBefore(div, formActions);
+        // Preenche valor se necessário
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        dataConclusaoInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        div.querySelector('#dataConclusao').value = `${year}-${month}-${day}T${hours}:${minutes}`;
       }
     } else {
-      dataConclusaoInput.value = '';
+      if (dataConclusaoGroup) {
+        dataConclusaoGroup.remove();
+      }
     }
-  });
+  }
+
+  statusSelect.addEventListener('change', updateDataConclusaoField);
+
+  // Se for nova tarefa, não mostra campo; se for edição e status=2, já mostra
+  // (já renderizado pelo template)
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const formData = new FormData(form);
+    const status = parseInt(formData.get('status'));
+    let dataConclusao = null;
+    if (status === 2) {
+      dataConclusao = formData.get('dataConclusao') || null;
+    }
     const taskData = {
       titulo: formData.get('titulo'),
       descricao: formData.get('descricao') || null,
-      status: parseInt(formData.get('status')),
-      dataConclusao: formData.get('dataConclusao') || null,
+      status,
+      dataConclusao,
     };
-
     await onSubmit(taskData);
     formContainer.remove();
   });
