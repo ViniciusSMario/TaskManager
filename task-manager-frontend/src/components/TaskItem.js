@@ -23,5 +23,7 @@ export function createTaskItem(task, onEdit, onDelete) {
   item.querySelector('.btn-edit').addEventListener('click', () => onEdit(task));
   item.querySelector('.btn-delete').addEventListener('click', () => onDelete(task.id));
 
+   
   return item;
 }
+

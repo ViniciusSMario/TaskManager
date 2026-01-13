@@ -46,8 +46,12 @@ public class TaskRepository : ITaskRepository
         }
     }
 
-    public async System.Threading.Tasks.Task<bool> ExistsByTitleAsync(string titulo)
+    public async System.Threading.Tasks.Task<bool> ExistsByTitleAsync(string titulo, int? ignoreId = null)
     {
+        if (ignoreId.HasValue)
+        {
+            return await _context.Tasks.AnyAsync(t => t.Titulo.ToLower() == titulo.ToLower() && t.Id != ignoreId.Value);
+        }
         return await _context.Tasks.AnyAsync(t => t.Titulo.ToLower() == titulo.ToLower());
     }
 }

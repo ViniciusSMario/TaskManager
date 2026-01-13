@@ -63,6 +63,12 @@ public class TaskService : ITaskService
             throw new InvalidOperationException(errorMessage);
         }
 
+        // Validação de título único na edição
+        if (await _repository.ExistsByTitleAsync(task.Titulo, task.Id))
+        {
+            throw new InvalidOperationException("Já existe uma tarefa com este título");
+        }
+
         // Lógica de negócio: se status mudou para Concluída, definir data de conclusão
         if (task.Status == TaskManager.Domain.TaskStatus.Concluida && existingTask.Status != TaskManager.Domain.TaskStatus.Concluida)
         {
