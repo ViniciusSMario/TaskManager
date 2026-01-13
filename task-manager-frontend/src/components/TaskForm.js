@@ -37,11 +37,20 @@ export function createTaskForm(task = null, onSubmit, onCancel) {
         <div class="form-group">
           <label for="status">Status *</label>
           <select id="status" name="status" required ${task && task.status === 2 ? 'disabled' : ''}>
-            ${Object.entries(StatusLabels).map(([value, label]) => `
-              <option value="${value}" ${task && task.status == value ? 'selected' : ''}>
-                ${label}
-              </option>
-            `).join('')}
+            ${task
+              ? Object.entries(StatusLabels).map(([value, label]) => `
+                  <option value="${value}" ${task && task.status == value ? 'selected' : ''}>
+                    ${label}
+                  </option>
+                `).join('')
+              : Object.entries(StatusLabels)
+                  .filter(([value]) => value == 0 || value == 1)
+                  .map(([value, label]) => `
+                    <option value="${value}">
+                      ${label}
+                    </option>
+                  `).join('')
+            }
           </select>
           ${task && task.status === 2 ? '<small class="status-info">Tarefa concluída não pode ter o status alterado</small>' : ''}
         </div>
