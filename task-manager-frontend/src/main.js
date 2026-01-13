@@ -111,7 +111,7 @@ function renderTasks() {
     const colTasks = filteredTasks.filter(task => task.status === col.status);
     if (colTasks.length > 0) hasTasks = true;
     colTasks.forEach(task => {
-      const taskItem = createTaskItem(task, handleEditTask, handleDeleteTask, handleStatusChange);
+      const taskItem = createTaskItem(task, handleEditTask, handleDeleteTask);
       colDiv.appendChild(taskItem);
     });
     board.appendChild(colDiv);
@@ -126,29 +126,7 @@ function renderTasks() {
     container.appendChild(board);
   }
 }
-// Handler para mudança de status via botões rápidos
-async function handleStatusChange(task, newStatus) {
-  if (task.status === 2 && newStatus !== 2) {
-    task.dataConclusao = null;
-  }
-  if (newStatus === 2) {
-    task.dataConclusao = new Date().toISOString();
-  }
-  try {
-    showLoading(true);
-    await updateTask(task.id, {
-      titulo: task.titulo,
-      descricao: task.descricao,
-      status: newStatus,
-      dataConclusao: task.dataConclusao
-    });
-    await loadTasks();
-  } catch (error) {
-    showError(error.message);
-  } finally {
-    showLoading(false);
-  }
-}
+
 // Kanban CSS básico
 const style = document.createElement('style');
 style.innerHTML = `
