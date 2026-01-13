@@ -122,7 +122,6 @@ dotnet run --project TaskManager.API
 ```
 
 A API estará disponível em:
-- HTTP: `http://localhost:5194`
 - Swagger: `http://localhost:5194/swagger`
 
 ### Instalação do Frontend
